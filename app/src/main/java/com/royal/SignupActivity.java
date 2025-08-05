@@ -5,6 +5,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -12,11 +13,16 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.concurrent.ExecutionException;
 
 
 public class SignupActivity extends AppCompatActivity {
@@ -36,11 +42,11 @@ public class SignupActivity extends AppCompatActivity {
             return insets;
         });
 
+        //binding
         edtFirstName = findViewById(R.id.edtSignupFirstName);
         edtLastName = findViewById(R.id.edtSignupLastName);
         edtEmail = findViewById(R.id.edtSignupEmail);
         edtPassword = findViewById(R.id.edtSignupPassword);
-
         btnSubmit = findViewById(R.id.signupBtn);
 
 
@@ -48,74 +54,69 @@ public class SignupActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-
-
-                //api calling  internet
-                //api -> main thread -> new thread
-
-                //api -> code
-                new SignupApi().start();
+                    //api -> network
+                SignupApi s = new SignupApi();
+                s.start();
             }
         });
 
-
     }
-
-
     class SignupApi extends Thread{
         public void run(){
-            String firstName = edtFirstName.getText().toString();
+            //read
+            String firstName  = edtFirstName.getText().toString();
             String lastName = edtLastName.getText().toString();
             String email = edtEmail.getText().toString();
             String password = edtPassword.getText().toString();
 
+            //api?
+            String apiUrl = "https://diamondgamenode.onrender.com/api/auth/signup";
 
+            //api call
             try {
+                URL url = new URL(apiUrl);
+                HttpURLConnection httpConnection = (HttpURLConnection) url.openConnection();
 
-                //step 1:
-                URL url = new URL("https://diamondgamenode.onrender.com/api/auth/signup");
+                httpConnection.setRequestMethod("POST");
+                httpConnection.setRequestProperty("Content-Type", "application/json");
+                httpConnection.setRequestProperty("Accept", "application/json");
+                httpConnection.setDoOutput(true); // Required to send body
 
-                //step 2:
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                HashMap<String,Object> data = new HashMap<>();
+                data.put("firstName",firstName);
+                data.put("lastName",lastName);
+                data.put("email",email);
+                data.put("password",password);
+                data.put("credit",25000);
 
+                JSONObject jsonObject = new JSONObject(data);
+                String jsonData  = jsonObject.toString();
 
-                //step 3:
-                conn.setRequestMethod("POST");
-                conn.setRequestProperty("Content-Type", "application/json");
-                conn.setRequestProperty("Accept", "application/json");
-                conn.setDoOutput(true);
-
-                String jsonInputString = String.format(
-                        "{\"firstName\":\"%s\", \"lastName\":\"%s\", \"email\":\"%s\", \"password\":\"%s\"}",
-                        firstName, lastName, email, password
-                );
-
-                //step 4:
-                try (OutputStream os = conn.getOutputStream()) {
-                    byte[] input = jsonInputString.getBytes("utf-8");
+                try (OutputStream os = httpConnection.getOutputStream()) {
+                    byte[] input = jsonData.getBytes("utf-8");
                     os.write(input, 0, input.length);
                 }
 
-                //step 5:
-                // Read the response
-                StringBuilder response = new StringBuilder();
-                try (BufferedReader
-                             br = new BufferedReader(
-                        new InputStreamReader(conn.getInputStream(), "utf-8"))) {
-                    String responseLine;
-                    while ((responseLine = br.readLine()) != null) {
-                        response.append(responseLine.trim());
-                    }
+                int statusCode = httpConnection.getResponseCode();
+
+                //200
+                //201
+                if(statusCode == 201){
+                    //success
+                   // Toast.makeText(getApplicationContext(),"Success",Toast.LENGTH_LONG).show();
                 }
 
-                Log.i("response",response.toString());
 
             } catch (Exception e) {
-                e.printStackTrace();
+                throw new RuntimeException(e);
             }
+
+
         }
     }
-}
+}//end of class
+//1) internet access -> AndroidManifest.xml
+//2) main thread network call not allow -> class extends Thread -> logic -> start()
 
 
 
