@@ -13,6 +13,8 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.royal.apiservice.ApiService;
+
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -22,7 +24,16 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 
 public class SignupActivity extends AppCompatActivity {
@@ -54,66 +65,35 @@ public class SignupActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                    //api -> network
-                SignupApi s = new SignupApi();
-                s.start();
+                Retrofit retrofit = new Retrofit.Builder()
+                        .baseUrl("https://diamondgamenode.onrender.com/")
+                        .addConverterFactory(GsonConverterFactory.create())
+                        .build();
+
+               ApiService apiService =  retrofit.create(ApiService.class);
+
+               Call<Integer> call =  apiService.signupApi();
+
+               call.enqueue(new Callback<Integer>() {
+                   @Override
+                   public void onResponse(Call<Integer> call, Response<Integer> response) {
+
+                       //
+                       //
+                   }
+
+                   @Override
+                   public void onFailure(Call<Integer> call, Throwable t) {
+
+                   }
+               });
+
+
             }
-        });
+         });
 
     }
-    class SignupApi extends Thread{
-        public void run(){
-            //read
-            String firstName  = edtFirstName.getText().toString();
-            String lastName = edtLastName.getText().toString();
-            String email = edtEmail.getText().toString();
-            String password = edtPassword.getText().toString();
 
-            //api?
-            String apiUrl = "https://diamondgamenode.onrender.com/api/auth/signup";
-
-            //api call
-            try {
-                URL url = new URL(apiUrl);
-                HttpURLConnection httpConnection = (HttpURLConnection) url.openConnection();
-
-                httpConnection.setRequestMethod("POST");
-                httpConnection.setRequestProperty("Content-Type", "application/json");
-                httpConnection.setRequestProperty("Accept", "application/json");
-                httpConnection.setDoOutput(true); // Required to send body
-
-                HashMap<String,Object> data = new HashMap<>();
-                data.put("firstName",firstName);
-                data.put("lastName",lastName);
-                data.put("email",email);
-                data.put("password",password);
-                data.put("credit",25000);
-
-                JSONObject jsonObject = new JSONObject(data);
-                String jsonData  = jsonObject.toString();
-
-                try (OutputStream os = httpConnection.getOutputStream()) {
-                    byte[] input = jsonData.getBytes("utf-8");
-                    os.write(input, 0, input.length);
-                }
-
-                int statusCode = httpConnection.getResponseCode();
-
-                //200
-                //201
-                if(statusCode == 201){
-                    //success
-                   // Toast.makeText(getApplicationContext(),"Success",Toast.LENGTH_LONG).show();
-                }
-
-
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-
-
-        }
-    }
 }//end of class
 //1) internet access -> AndroidManifest.xml
 //2) main thread network call not allow -> class extends Thread -> logic -> start()
