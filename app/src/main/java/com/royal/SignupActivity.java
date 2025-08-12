@@ -1,5 +1,6 @@
 package com.royal;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -14,6 +15,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.royal.apiservice.ApiService;
+import com.royal.model.UserModel;
 
 import org.json.JSONObject;
 
@@ -72,22 +74,28 @@ public class SignupActivity extends AppCompatActivity {
 
                ApiService apiService =  retrofit.create(ApiService.class);
 
-               Call<Integer> call =  apiService.signupApi();
+                UserModel userModel = new UserModel();
 
-               call.enqueue(new Callback<Integer>() {
-                   @Override
-                   public void onResponse(Call<Integer> call, Response<Integer> response) {
+                userModel.setFirstName(edtFirstName.getText().toString());
+                userModel.setEmail(edtEmail.getText().toString());
+                userModel.setLastName(edtLastName.getText().toString());
+                userModel.setPassword(edtPassword.getText().toString());
+                userModel.setCredit(26000);
 
-                       //
-                       //
-                   }
+                Call<UserModel> call = apiService.signupApi(userModel);
 
-                   @Override
-                   public void onFailure(Call<Integer> call, Throwable t) {
+                call.enqueue(new Callback<UserModel>() {
+                    @Override
+                    public void onResponse(Call<UserModel> call, Response<UserModel> response) {
+                        Toast.makeText(getApplicationContext(),"Success",Toast.LENGTH_LONG).show();
+//                        Intent intent = new Intent(getApplicationContext(),Login)
+                    }
 
-                   }
-               });
+                    @Override
+                    public void onFailure(Call<UserModel> call, Throwable t) {
 
+                    }
+                });
 
             }
          });
