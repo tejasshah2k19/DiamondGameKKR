@@ -89,7 +89,7 @@ public class SignupActivity extends AppCompatActivity {
                     public void onResponse(Call<UserModel> call, Response<UserModel> response) {
                         Toast.makeText(getApplicationContext(),"Success",Toast.LENGTH_LONG).show();
 //                        Intent intent = new Intent(getApplicationContext(),Login)
-                    }
+                     }
 
                     @Override
                     public void onFailure(Call<UserModel> call, Throwable t) {
