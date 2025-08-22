@@ -1,5 +1,7 @@
 package com.royal;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -75,6 +77,19 @@ public class LoginActivity extends AppCompatActivity {
                         if(response.code() == 200){
                             //valid
                             Log.i("api",response.body().getUser().getFirstName());
+
+                            SharedPreferences sp  = getSharedPreferences("DiamondGame",MODE_PRIVATE);
+                            SharedPreferences.Editor editor = sp.edit();
+
+                            editor.putString("firstName",response.body().getUser().getFirstName());
+                            editor.putString("email",response.body().getUser().getEmail());
+                            editor.putString("lastName",response.body().getUser().getLastName());
+                            editor.putInt("credit",response.body().getUser().getCredit());
+                            editor.apply();
+
+
+                            Intent intent = new Intent(getApplicationContext(), HomeActicity.class);
+                            startActivity(intent);
                         }else {
                             //invalid
                             Log.i("api","Invalid");

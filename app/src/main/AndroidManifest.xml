@@ -15,6 +15,9 @@
         android:theme="@style/Theme.DiamondGameKKR"
         tools:targetApi="31">
         <activity
+            android:name=".HomeActicity"
+            android:exported="false" />
+        <activity
             android:name=".LoginActivity"
             android:exported="true" />
         <activity
